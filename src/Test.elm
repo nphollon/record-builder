@@ -60,6 +60,26 @@ tests = suite "RecordBuilder"
           , proto = { zeta = "baloney" }
           , dict = Dict.singleton "zeta" 1
           }
+
+        , suite "Documentation"
+          [ testBuild "Munster"
+            { expected = Just { father = "Hermann", mother = "Lily" }
+            , proto = cleaver
+            , dict = Dict.fromList [("father", "Hermann"), ("mother", "Lily")]
+            }
+            
+          , testBuild "Addams"
+            { expected = Nothing
+            , proto = cleaver
+            , dict = Dict.fromList [("father", "Gomez"), ("mother", "Morticia"), ("cousin", "It")]
+            }
+
+          , testBuild "Taylor"
+            { expected = Nothing
+            , proto = cleaver
+            , dict = Dict.singleton "father" "Andy"
+            }
+          ]
         ]
 
 
@@ -75,3 +95,6 @@ type alias TestData a b =
   , proto : a
   , dict : Dict String b
   }
+
+ 
+cleaver = { father = "Ward", mother = "June" }
