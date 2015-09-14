@@ -8,7 +8,7 @@ import ElmTest.Test exposing (Test, test, suite)
 import ElmTest.Assertion exposing (assertEqual)
 import ElmTest.Runner.String exposing (runDisplay)
 
-import RecordBuilder exposing (Error (..), build)
+import RecordBuilder exposing (build)
 
 
 main = 
@@ -20,43 +20,43 @@ main =
 tests : Test
 tests = suite "RecordBuilder"
         [ testBuild "Empty dict"
-          { expected = Err MissingFields
+          { expected = Nothing
           , proto = { a = "Hello" }
           , dict = Dict.empty
           }
           
         , testBuild "Matching one string field"
-          { expected = Ok { a = "Goodbye" }
+          { expected = Just { a = "Goodbye" }
           , proto = { a = "Hello" }
           , dict = Dict.singleton "a" "Goodbye"
           }
 
         , testBuild "Matching two string fields"
-          { expected = Ok { b = "Truth", c = "Beauty" }
+          { expected = Just { b = "Truth", c = "Beauty" }
           , proto = { b = "Top", c = "Bottom" }
           , dict = Dict.fromList [("b","Truth"), ("c","Beauty")]
           }
 
         , testBuild "Matching two integer fields"
-          { expected = Ok { up = 7, down = -10 }
+          { expected = Just { up = 7, down = -10 }
           , proto = { down = 0, up = 0 }
           , dict = Dict.fromList [("up",7), ("down",-10)]
           }
 
         , testBuild "Dict is missing a field"
-          { expected = Err MissingFields
+          { expected = Nothing
           , proto = { alpha = 1, beta = 2 }
           , dict = Dict.fromList [("beta", 4)]
           }
 
         , testBuild "Dict has too many fields"
-          { expected = Err ExtraFields
+          { expected = Nothing
           , proto = { gamma = 3, delta = 4 }
           , dict = Dict.fromList [("gamma",3),("delta",4),("epsilon",0)]
           }
 
         , testBuild "Field types do not match"
-          { expected = Err TypeMismatch
+          { expected = Nothing
           , proto = { zeta = "baloney" }
           , dict = Dict.singleton "zeta" 1
           }
@@ -71,7 +71,7 @@ testBuild name data =
        
 
 type alias TestData a b =
-  { expected : Result Error a
+  { expected : Maybe a
   , proto : a
   , dict : Dict String b
   }

@@ -8,6 +8,8 @@ Elm.Native.RecordBuilder.make = function (elm) {
         return elm.Native.RecordBuilder.values;
     }
 
+    var Show = Elm.Native.Show.make(elm);
+    
     var translate = function (kvs) {
         var record = { _ : {} };
 
@@ -24,30 +26,38 @@ Elm.Native.RecordBuilder.make = function (elm) {
     };
 
 
-    var checkMissingFields = function (expected) {
+    var checkFields = function (expected) {
         return function (actual) {
-            return Object.keys(expected).every(function (key) {
-                return actual.hasOwnProperty(key);
-            });
+            return fieldCountsMatch(expected, actual) && expectedFieldsExist(expected, actual);
         };
     };
 
-    var checkExtraFields = function (expected) {
-        return function (actual) {
-            return Object.keys(expected).length === Object.keys(actual).length;
-        };
-    };
+    var expectedFieldsExist = function (expected, actual) {
+        return Object.keys(expected).every(function (key) {
+            if (key === '_') {
+                return true;
+            }
+            
+            if (!actual.hasOwnProperty(key)) {
+                return false;
+            }
 
-    var checkTypes = function (expected) {
-        return function (actual) {
-            return false;
-        };
+            var type = typeof actual[key];
+            
+            if (type !== "object") {
+                return type === typeof expected[key];
+            }
+
+            return actual[key].ctor === expected[key].ctor;
+        });
+    }
+
+    var fieldCountsMatch = function (expected, actual) {
+        return Object.keys(expected).length === Object.keys(actual).length;
     };
     
     return elm.Native.RecordBuilder.values = {
         translate: translate,
-        checkMissingFields: checkMissingFields,
-        checkExtraFields: checkExtraFields,
-        checkTypes: checkTypes,
+        checkFields: checkFields,
     };
 };
