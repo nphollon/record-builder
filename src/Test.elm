@@ -61,6 +61,18 @@ tests = suite "RecordBuilder"
           , dict = Dict.singleton "zeta" 1
           }
 
+        , testBuild "Prototype is a number"
+          { expected = Nothing
+          , proto = 1
+          , dict = Dict.singleton "1" 1
+          }
+
+        , testBuild "Prototype is a non-uniform record"
+          { expected = Nothing
+          , proto = { omicron = False, iota = 0 }
+          , dict = Dict.fromList [("omicron", 0), ("iota", 0)]
+          }
+
         , suite "Documentation"
           [ testBuild "Munster"
             { expected = Just { father = "Hermann", mother = "Lily" }
