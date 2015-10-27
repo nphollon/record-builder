@@ -13,7 +13,8 @@ runtime, but runtime errors are still possible.
 
 import Dict exposing (Dict)
 
-import Native.RecordBuilder
+import Json.Encode as Encode exposing (Value)
+import Json.Decode as Decode exposing (Decoder, andThen, map, (:=))
 
 
 {-| Try to create a record with the same keys & values as the given dictionary.
@@ -47,3 +48,35 @@ checkFields proto specimen =
   if Native.RecordBuilder.checkFields proto specimen
   then Just specimen
   else Nothing
+
+
+encodeDict : (a -> Value) -> Dict String a -> Value
+encodeDict f =
+  Dict.map (always f) >> Dict.toList >> Encode.object
+
+
+decode : Decoder f -> Decoder { a : f, b : f }
+decode f =
+  let
+    init a b = { a = a, b = b }
+  in
+    Decode.succeed init
+            `andMap` ("a" := f)
+            `andMap` ("b" := f)
+
+                   
+buildData : Dict String String -> Result String { a : String, b : String }
+buildData =
+  recode (encodeDict Encode.string) (decode Decode.string)
+
+              
+andMap : Decoder (a -> b) -> Decoder a -> Decoder b
+andMap partial next =
+  partial `andThen` (map `flip` next)
+
+                      
+recode : (b -> Value) -> Decoder a -> b -> Result String a
+recode encode decoder =
+    encode >> Decode.decodeValue decoder
+
+       

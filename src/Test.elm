@@ -19,6 +19,8 @@ main =
 
 tests : Test
 tests = suite "RecordBuilder"
+        
+        -- Happy paths
         [ testBuild "Empty dict"
           { expected = Nothing
           , proto = { a = "Hello" }
@@ -43,6 +45,7 @@ tests = suite "RecordBuilder"
           , dict = Dict.fromList [("up",7), ("down",-10)]
           }
 
+        -- Dict is the wrong size
         , testBuild "Dict is missing a field"
           { expected = Nothing
           , proto = { alpha = 1, beta = 2 }
@@ -55,10 +58,11 @@ tests = suite "RecordBuilder"
           , dict = Dict.fromList [("gamma",3),("delta",4),("epsilon",0)]
           }
 
-        , testBuild "Field types do not match"
+        -- Malformed prototype
+        , testBuild "Prototype is a non-uniform record"
           { expected = Nothing
-          , proto = { zeta = "baloney" }
-          , dict = Dict.singleton "zeta" 1
+          , proto = { omicron = False, iota = 0 }
+          , dict = Dict.fromList [("omicron", False), ("iota", False)]
           }
 
         , testBuild "Prototype is a number"
@@ -67,10 +71,23 @@ tests = suite "RecordBuilder"
           , dict = Dict.singleton "1" 1
           }
 
-        , testBuild "Prototype is a non-uniform record"
+        , testBuild "Prototype is a list"
           { expected = Nothing
-          , proto = { omicron = False, iota = 0 }
-          , dict = Dict.fromList [("omicron", 0), ("iota", 0)]
+          , proto = [ ("a", 0), ("b", 1) ]
+          , dict = Dict.fromList [("a", 0), ("b", 1)]
+          }
+
+        -- Sneaky dict types
+        , testBuild "Field types do not match"
+          { expected = Nothing
+          , proto = { zeta = "baloney" }
+          , dict = Dict.singleton "zeta" 1
+          }
+
+        , testBuild "String vs Char"
+          { expected = Nothing
+          , proto = { theta = 'A' }
+          , dict = Dict.singleton "theta" 'A'
           }
 
         , suite "Documentation"
@@ -110,3 +127,5 @@ type alias TestData a b =
 
  
 cleaver = { father = "Ward", mother = "June" }
+
+
